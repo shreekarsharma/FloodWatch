@@ -1,309 +1,184 @@
-import { Card, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core";
-import DischargeChart from "../charts/DischargeChart";
-import RainfallChart from "../charts/RainfallChart";
+import DischargeChart from "../charts/DischargeChart"
+import RainfallChart from "../charts/RainfallChart"
+
+const glassCard =
+  "rounded-xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-2xl"
 
 const summaryCards = [
   {
-    title: "Latest Discharge",
+    label: "Latest Discharge",
     value: "842 m³/s",
-    description: "Most recent observed discharge",
+    description: "Current observed discharge",
   },
   {
-    title: "Latest Rainfall",
+    label: "Latest Rainfall",
     value: "18.4 mm",
-    description: "Recent recorded rainfall",
+    description: "Recent rainfall",
   },
   {
-    title: "Soil Moisture",
+    label: "Soil Moisture",
     value: "0.61",
-    description: "Recent soil moisture level",
+    description: "Current soil moisture",
   },
   {
-    title: "Warning Level",
+    label: "Warning Level",
     value: "GREEN",
-    description: "Current historical status",
+    description: "Current status",
   },
-];
-
-const glassCardStyles = {
-  background: "rgba(255, 255, 255, 0.07)",
-  border: "1px solid rgba(255, 255, 255, 0.18)",
-  backdropFilter: "blur(24px) saturate(140%)",
-  WebkitBackdropFilter: "blur(24px) saturate(140%)",
-  boxShadow:
-    "0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)",
-};
+]
 
 function Dashboard() {
   return (
-    <Stack gap="xl">
-      <Group justify="space-between" align="flex-end">
+    <div className="space-y-8">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <Title order={1} c="white">
+          <h1 className="text-3xl font-bold text-white">
             FloodWatch Dashboard
-          </Title>
+          </h1>
 
-          <Text c="gray.5" mt="xs">
-            Historical flood monitoring, multi-horizon forecasting, and event
-            analysis for the White Volta Basin.
-          </Text>
+          <p className="mt-2 text-sm text-slate-400">
+            Historical flood monitoring and multi-horizon forecasting.
+          </p>
         </div>
 
-        <Stack gap={2} align="flex-end">
-          <Text size="xs" c="gray.5">
-            Nawuni Gauge
-          </Text>
-
-          <Text size="sm" fw={600} c="white">
+        <div>
+          <p className="text-xs text-slate-500">Basin</p>
+          <p className="text-sm font-semibold text-white">
             White Volta Basin
-          </Text>
+          </p>
+        </div>
+      </div>
 
-          <Text size="xs" c="gray.6">
-            Historical data
-          </Text>
-        </Stack>
-      </Group>
-
-      <SimpleGrid cols={{ base: 1, sm: 2, xl: 4 }}>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
-          <Card
-            key={card.title}
-            padding="lg"
-            radius="lg"
-            style={glassCardStyles}
-          >
-            <Text size="sm" c="gray.4" fw={500}>
-              {card.title}
-            </Text>
+          <div key={card.label} className={glassCard}>
+            <p className="text-sm text-slate-400">{card.label}</p>
 
-            <Text size="28px" fw={700} c="white" mt="sm">
+            <p className="mt-3 text-2xl font-bold text-white">
               {card.value}
-            </Text>
+            </p>
 
-            <Text size="xs" c="gray.5" mt={4}>
+            <p className="mt-1 text-xs text-slate-500">
               {card.description}
-            </Text>
-          </Card>
+            </p>
+          </div>
         ))}
-      </SimpleGrid>
+      </div>
 
-      <SimpleGrid cols={{ base: 1, xl: 2 }}>
-        <Card
-          padding="lg"
-          radius="lg"
-          style={{
-            ...glassCardStyles,
-            minHeight: 430,
-          }}
-        >
-          <Title order={3} c="white">
-            Historical Discharge
-          </Title>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className={glassCard}>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-white">
+              Recent Discharge
+            </h2>
 
-          <Text size="sm" c="gray.5" mt={4} mb="md">
-            Recent observed discharge at the Nawuni gauge
-          </Text>
+            <p className="text-sm text-slate-500">
+              Historical discharge observations
+            </p>
+          </div>
 
           <DischargeChart />
-        </Card>
+        </div>
 
-        <Card
-          padding="lg"
-          radius="lg"
-          style={{
-            ...glassCardStyles,
-            minHeight: 430,
-          }}
-        >
-          <Title order={3} c="white">
-            Recent Rainfall
-          </Title>
+        <div className={glassCard}>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-white">
+              Recent Rainfall
+            </h2>
 
-          <Text size="sm" c="gray.5" mt={4} mb="md">
-            Recent recorded rainfall
-          </Text>
+            <p className="text-sm text-slate-500">
+              Historical rainfall observations
+            </p>
+          </div>
 
           <RainfallChart />
-        </Card>
-      </SimpleGrid>
+        </div>
+      </div>
 
-      <Card
-        padding="lg"
-        radius="lg"
-        style={{
-          ...glassCardStyles,
-          minHeight: 430,
-        }}
-      >
-        <Title order={3} c="white">
-          Current Warning Status
-        </Title>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className={glassCard}>
+          <h2 className="text-lg font-semibold text-white">
+            Current Warning Status
+          </h2>
 
-        <Text size="sm" c="gray.5" mt={4}>
-          Historical status based on observed discharge
-        </Text>
+          <div className="mt-5 flex items-center justify-between">
+            <div>
+              <p className="text-3xl font-bold text-emerald-300">
+                GREEN
+              </p>
 
-        <Text size="32px" fw={700} c="green.4" mt="lg">
-          GREEN
-        </Text>
+              <p className="mt-1 text-sm text-slate-500">
+                Current observed discharge is below the flood threshold.
+              </p>
+            </div>
 
-        <Text size="sm" c="gray.5" mt="xs">
-          Conditions are currently below the defined warning thresholds.
-        </Text>
-      </Card>
-      <Card padding="lg" radius="lg" style={glassCardStyles}>
-        <Title order={3} c="white">
-          Forecast Overview
-        </Title>
+            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-300">
+              Normal
+            </div>
+          </div>
+        </div>
 
-        <Text size="sm" c="gray.5" mt={4} mb="lg">
-          Multi-horizon discharge forecasts
-        </Text>
+        <div className={glassCard}>
+          <h2 className="text-lg font-semibold text-white">
+            Forecast Overview
+          </h2>
 
-        <SimpleGrid cols={{ base: 1, sm: 3 }}>
-          <Card
-            padding="md"
-            radius="md"
-            style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <Text size="sm" c="gray.5">
-              1-Day Forecast
-            </Text>
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            {[
+              ["1 Day", "910 m³/s", "GREEN"],
+              ["3 Days", "1040 m³/s", "YELLOW"],
+              ["5 Days", "1180 m³/s", "YELLOW"],
+            ].map(([horizon, discharge, warning]) => (
+              <div
+                key={horizon}
+                className="rounded-lg border border-white/10 bg-white/[0.04] p-3"
+              >
+                <p className="text-xs text-slate-500">{horizon}</p>
+                <p className="mt-2 text-lg font-bold text-white">
+                  {discharge}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {warning}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-            <Text size="24px" fw={700} c="white" mt="xs">
-              910 m³/s
-            </Text>
-
-            <Text size="xs" c="green.4" mt={4}>
-              GREEN
-            </Text>
-          </Card>
-
-          <Card
-            padding="md"
-            radius="md"
-            style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <Text size="sm" c="gray.5">
-              3-Day Forecast
-            </Text>
-
-            <Text size="24px" fw={700} c="white" mt="xs">
-              1040 m³/s
-            </Text>
-
-            <Text size="xs" c="yellow.4" mt={4}>
-              YELLOW
-            </Text>
-          </Card>
-
-          <Card
-            padding="md"
-            radius="md"
-            style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <Text size="sm" c="gray.5">
-              5-Day Forecast
-            </Text>
-
-            <Text size="24px" fw={700} c="white" mt="xs">
-              1180 m³/s
-            </Text>
-
-            <Text size="xs" c="yellow.4" mt={4}>
-              YELLOW
-            </Text>
-          </Card>
-        </SimpleGrid>
-      </Card>
-      <Card padding="lg" radius="lg" style={glassCardStyles}>
-        <Title order={3} c="white">
+      <div className={glassCard}>
+        <h2 className="text-lg font-semibold text-white">
           Recent Flood Events
-        </Title>
+        </h2>
 
-        <Text size="sm" c="gray.5" mt={4} mb="lg">
-          Historical flood events detected from observed discharge
-        </Text>
+        <p className="mt-1 text-sm text-slate-500">
+          Historical events detected using the project flood threshold.
+        </p>
 
-        <Stack gap="sm">
-          <Group justify="space-between">
-            <div>
-              <Text size="sm" fw={600} c="white">
-                Event 12
-              </Text>
+        <div className="mt-5 overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-slate-400">
+                <th className="px-3 py-3 font-medium">Event</th>
+                <th className="px-3 py-3 font-medium">Start</th>
+                <th className="px-3 py-3 font-medium">End</th>
+                <th className="px-3 py-3 font-medium">Peak</th>
+              </tr>
+            </thead>
 
-              <Text size="xs" c="gray.5">
-                12 Aug 2005 – 21 Aug 2005
-              </Text>
-            </div>
-
-            <div style={{ textAlign: "right" }}>
-              <Text size="sm" fw={600} c="white">
-                1,842 m³/s
-              </Text>
-
-              <Text size="xs" c="orange.4">
-                High difficulty
-              </Text>
-            </div>
-          </Group>
-
-          <Group justify="space-between">
-            <div>
-              <Text size="sm" fw={600} c="white">
-                Event 11
-              </Text>
-
-              <Text size="xs" c="gray.5">
-                04 Aug 2004 – 12 Aug 2004
-              </Text>
-            </div>
-
-            <div style={{ textAlign: "right" }}>
-              <Text size="sm" fw={600} c="white">
-                1,526 m³/s
-              </Text>
-
-              <Text size="xs" c="yellow.4">
-                Medium difficulty
-              </Text>
-            </div>
-          </Group>
-
-          <Group justify="space-between">
-            <div>
-              <Text size="sm" fw={600} c="white">
-                Event 10
-              </Text>
-
-              <Text size="xs" c="gray.5">
-                19 Jul 2003 – 27 Jul 2003
-              </Text>
-            </div>
-
-            <div style={{ textAlign: "right" }}>
-              <Text size="sm" fw={600} c="white">
-                1,314 m³/s
-              </Text>
-
-              <Text size="xs" c="green.4">
-                Low difficulty
-              </Text>
-            </div>
-          </Group>
-        </Stack>
-      </Card>
-    </Stack>
-  );
+            <tbody>
+              <tr className="border-b border-white/[0.06]">
+                <td className="px-3 py-3 text-slate-300">—</td>
+                <td className="px-3 py-3 text-slate-400">—</td>
+                <td className="px-3 py-3 text-slate-400">—</td>
+                <td className="px-3 py-3 text-slate-400">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-export default Dashboard;
+export default Dashboard

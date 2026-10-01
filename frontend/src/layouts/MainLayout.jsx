@@ -1,5 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { AppShell, Group, Stack, Text, ThemeIcon } from "@mantine/core";
+import { NavLink, Outlet } from "react-router-dom"
 import {
   LayoutDashboard,
   Database,
@@ -7,153 +6,81 @@ import {
   Waves,
   ChartNoAxesCombined,
   Lightbulb,
-} from "lucide-react";
+} from "lucide-react"
 
 function MainLayout() {
   const navigation = [
-    {
-      name: "Dashboard",
-      path: "/",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Historical Data",
-      path: "/historical-data",
-      icon: Database,
-    },
-    {
-      name: "Forecast",
-      path: "/forecast",
-      icon: CloudRain,
-    },
-    {
-      name: "Flood Events",
-      path: "/flood-events",
-      icon: Waves,
-    },
-    {
-      name: "Event Difficulty",
-      path: "/event-difficulty",
-      icon: ChartNoAxesCombined,
-    },
-    {
-      name: "Explainability",
-      path: "/explainability",
-      icon: Lightbulb,
-    },
-  ];
+    { name: "Dashboard", path: "/", icon: LayoutDashboard },
+    { name: "Historical Data", path: "/historical-data", icon: Database },
+    { name: "Forecast", path: "/forecast", icon: CloudRain },
+    { name: "Flood Events", path: "/flood-events", icon: Waves },
+    { name: "Event Difficulty", path: "/event-difficulty", icon: ChartNoAxesCombined },
+    { name: "Explainability", path: "/explainability", icon: Lightbulb },
+  ]
 
   return (
-    <AppShell
-      navbar={{
-        width: 270,
-        breakpoint: "md",
-        collapsed: {
-          mobile: true,
-        },
-      }}
-      header={{
-        height: {
-          base: 60,
-          md: 0,
-        },
-      }}
-      padding="lg"
-      styles={{
-        main: {
-          background: "transparent",
-        },
-        navbar: {
-          background: "rgba(255, 255, 255, 0.035)",
-          backdropFilter: "blur(28px) saturate(140%)",
-          WebkitBackdropFilter: "blur(28px) saturate(140%)",
-          borderRight: "1px solid rgba(255, 255, 255, 0.14)",
-          boxShadow: "4px 0 30px rgba(0, 0, 0, 0.12)",
-        },
-      }}
-    >
-      <AppShell.Header
-        hiddenFrom="md"
-        style={{
-          background: "rgba(255, 255, 255, 0.06)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
-        }}
-      >
-        <Group h="100%" px="md">
-          <Text size="lg" fw={700} c="white">
-            🌊 FloodWatch
-          </Text>
-        </Group>
-      </AppShell.Header>
-      <AppShell.Navbar p="md">
-        <AppShell.Section>
-          <Text size="xl" fw={700} c="white">
-            🌊 FloodWatch
-          </Text>
+    <div className="min-h-screen bg-transparent text-slate-200">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[270px] border-r border-white/10 bg-white/[0.035] backdrop-blur-2xl md:block">
+        <div className="flex h-full flex-col p-5">
+          <div>
+            <h1 className="text-xl font-bold text-white">
+              🌊 FloodWatch
+            </h1>
 
-          <Text size="xs" c="gray.5" mt={4}>
-            Historical Flood Forecasting
-          </Text>
-        </AppShell.Section>
+            <p className="mt-1 text-xs text-slate-500">
+              Historical Flood Forecasting
+            </p>
+          </div>
 
-        <AppShell.Section grow mt="xl">
-          <Stack gap="xs">
+          <nav className="mt-8 flex-1 space-y-1">
             {navigation.map((item) => {
-              const Icon = item.icon;
+              const Icon = item.icon
 
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  style={{ textDecoration: "none" }}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition ${
+                      isActive
+                        ? "bg-white/[0.12] font-semibold text-white"
+                        : "text-slate-400 hover:bg-white/[0.06] hover:text-white"
+                    }`
+                  }
                 >
                   {({ isActive }) => (
-                    <Group
-                      gap="sm"
-                      px="sm"
-                      py="sm"
-                      style={{
-                        borderRadius: 10,
-                        color: isActive ? "#ffffff" : "#94a3b8",
-                        background: isActive
-                          ? "rgba(255, 255, 255, 0.12)"
-                          : "transparent",
-                        transition: "all 0.2s ease",
-                      }}
-                    >
-                      <ThemeIcon
-                        variant="transparent"
-                        size="sm"
-                        c={isActive ? "cyan.3" : "gray.5"}
-                      >
-                        <Icon size={18} />
-                      </ThemeIcon>
-
-                      <Text size="sm" fw={isActive ? 600 : 400}>
-                        {item.name}
-                      </Text>
-                    </Group>
+                    <>
+                      <Icon
+                        size={18}
+                        className={isActive ? "text-cyan-300" : "text-slate-500"}
+                      />
+                      <span>{item.name}</span>
+                    </>
                   )}
                 </NavLink>
-              );
+              )
             })}
-          </Stack>
-        </AppShell.Section>
+          </nav>
 
-        <AppShell.Section>
-          <Text size="xs" c="gray.6">
+          <p className="text-xs text-slate-600">
             White Volta Basin
-          </Text>
-        </AppShell.Section>
-      </AppShell.Navbar>
+          </p>
+        </div>
+      </aside>
 
-      <AppShell.Main>
+      <header className="fixed inset-x-0 top-0 z-30 h-[60px] border-b border-white/10 bg-white/[0.06] backdrop-blur-2xl md:hidden">
+        <div className="flex h-full items-center px-4">
+          <span className="text-lg font-bold text-white">
+            🌊 FloodWatch
+          </span>
+        </div>
+      </header>
+
+      <main className="min-h-screen px-4 py-6 pt-[84px] md:ml-[270px] md:px-8 md:py-8 md:pt-8">
         <Outlet />
-      </AppShell.Main>
-    </AppShell>
-  );
+      </main>
+    </div>
+  )
 }
 
-export default MainLayout;
+export default MainLayout
