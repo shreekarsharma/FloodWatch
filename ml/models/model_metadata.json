@@ -1,0 +1,95 @@
+{
+  "project": "FloodWatch",
+  "model_type": "RandomForestRegressor",
+  "model_purpose": "Historical-data multi-horizon discharge forecasting",
+  "horizons_days": [
+    1,
+    3,
+    5
+  ],
+  "features": [
+    "rainfall_mm",
+    "temperature_c",
+    "et_mm",
+    "soil_moisture",
+    "bagre_storage",
+    "bagre_storage_30d",
+    "discharge_lag1",
+    "discharge_lag2",
+    "discharge_lag3",
+    "discharge_lag4",
+    "discharge_lag5",
+    "discharge_lag6",
+    "discharge_lag7",
+    "discharge_lag8",
+    "discharge_lag9",
+    "discharge_lag10",
+    "rainfall_lag1",
+    "rainfall_lag2",
+    "rainfall_lag3",
+    "rainfall_lag4",
+    "rainfall_lag5",
+    "sin_doy",
+    "cos_doy"
+  ],
+  "feature_count": 23,
+  "parameters": {
+    "n_estimators": 300,
+    "max_features": "sqrt",
+    "min_samples_leaf": 2,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "warning_thresholds_m3s": {
+    "yellow": 1114.16,
+    "orange": 1362.21,
+    "red": 1898.58
+  },
+  "target_definition": "GRDC discharge at exact calendar date t+h; missing future calendar dates are not replaced by adjacent rows.",
+  "imputation": "SimpleImputer(strategy='median'), fitted separately on each horizon's eligible training predictors.",
+  "training_procedure": "Final deployment fit on all eligible historical target rows. This is not the event-held-out LOFO evaluation procedure.",
+  "dataset_path": "ml\\data\\feature_matrix_full.csv",
+  "results": [
+    {
+      "horizon_days": 1,
+      "model_file": "floodwatch_rf_1day.joblib",
+      "training_rows": 7237,
+      "feature_count": 23,
+      "feature_start_date": "1987-01-01",
+      "last_feature_date": "2007-02-27",
+      "target_start_date": "1987-01-02",
+      "target_end_date": "2007-02-28",
+      "target_min_m3s": 4.163,
+      "target_max_m3s": 2279.335
+    },
+    {
+      "horizon_days": 3,
+      "model_file": "floodwatch_rf_3day.joblib",
+      "training_rows": 7223,
+      "feature_count": 23,
+      "feature_start_date": "1987-01-01",
+      "last_feature_date": "2007-02-25",
+      "target_start_date": "1987-01-04",
+      "target_end_date": "2007-02-28",
+      "target_min_m3s": 4.163,
+      "target_max_m3s": 2279.335
+    },
+    {
+      "horizon_days": 5,
+      "model_file": "floodwatch_rf_5day.joblib",
+      "training_rows": 7214,
+      "feature_count": 23,
+      "feature_start_date": "1987-01-01",
+      "last_feature_date": "2007-02-23",
+      "target_start_date": "1987-01-06",
+      "target_end_date": "2007-02-28",
+      "target_min_m3s": 4.163,
+      "target_max_m3s": 2279.335
+    }
+  ],
+  "known_limitations": [
+    "The provenance and construction of bagre_storage_30d remain unverified.",
+    "These saved artifacts have not yet passed full research reproduction or operational validation.",
+    "Historical discharge is only available for part of the 1987-2023 feature-matrix date range."
+  ]
+}
