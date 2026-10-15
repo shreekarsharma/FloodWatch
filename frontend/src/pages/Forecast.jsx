@@ -20,6 +20,7 @@ function Forecast() {
     { value: "2007-02-26", label: "2007-02-26" },
     { value: "2007-02-25", label: "2007-02-25" },
     { value: "2007-02-24", label: "2007-02-24" },
+    { value: "2007-02-20", label: "2007-02-20" },
   ]
 
   const handleForecast = async () => {
@@ -30,16 +31,29 @@ function Forecast() {
 
     setLoading(true)
     setError("")
+    setForecast(null)
 
     try {
-      const data = await getForecast(forecastDate, horizon)
+      const data = await getForecast(forecastDate)
+
+      if (!Array.isArray(data.forecasts)) {
+        throw new Error("Unexpected forecast response format.")
+      }
+
       setForecast(data)
     } catch (err) {
-      setError("Unable to load forecast.")
+      console.error("Forecast request failed:", err)
+      setError(err.message || "Unable to load forecast.")
     } finally {
       setLoading(false)
     }
   }
+
+  const forecasts = forecast?.forecasts ?? []
+
+  const selectedForecast = forecasts.find(
+    (item) => item.horizon_days === Number(horizon),
+  )
 
   return (
     <div className="space-y-8">
@@ -79,7 +93,11 @@ function Forecast() {
 
             <select
               value={forecastDate}
-              onChange={(event) => setForecastDate(event.target.value)}
+              onChange={(event) => {
+                setForecastDate(event.target.value)
+                setForecast(null)
+                setError("")
+              }}
               className={inputClass}
             >
               <option value="">Select date</option>
@@ -129,33 +147,41 @@ function Forecast() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {[
-          ["1-Day Forecast", "1"],
-          ["3-Day Forecast", "3"],
-          ["5-Day Forecast", "5"],
-        ].map(([label, cardHorizon]) => (
-          <div key={cardHorizon} className={glassCard}>
-            <p className="text-sm text-slate-400">{label}</p>
+          ["1-Day Forecast", 1],
+          ["3-Day Forecast", 3],
+          ["5-Day Forecast", 5],
+        ].map(([label, cardHorizon]) => {
+          const item = forecasts.find(
+            (result) => result.horizon_days === cardHorizon,
+          )
 
-            <p className="mt-3 text-3xl font-bold text-white">
-              {forecast && horizon === cardHorizon
-                ? forecast.predicted_discharge ?? "—"
-                : "—"}
-            </p>
+          return (
+            <div key={cardHorizon} className={glassCard}>
+              <p className="text-sm text-slate-400">{label}</p>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Discharge (m³/s)
-            </p>
+              <p className="mt-3 text-3xl font-bold text-white">
+                {item ? item.predicted_discharge : "—"}
+              </p>
 
-            <p className="mt-4 text-sm text-slate-400">
-              Warning:{" "}
-              <span className="font-semibold text-white">
-                {forecast && horizon === cardHorizon
-                  ? forecast.warning_level ?? "—"
-                  : "—"}
-              </span>
-            </p>
-          </div>
-        ))}
+              <p className="mt-1 text-sm text-slate-500">
+                Discharge (m³/s)
+              </p>
+
+              <p className="mt-4 text-sm text-slate-400">
+                Warning:{" "}
+                <span className="font-semibold text-white">
+                  {item ? item.warning_level : "—"}
+                </span>
+              </p>
+
+              {item && (
+                <p className="mt-2 text-xs text-slate-500">
+                  Forecast date: {item.forecast_date}
+                </p>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <div className={glassCard}>
@@ -164,8 +190,30 @@ function Forecast() {
         </h2>
 
         <p className="mt-1 text-sm text-slate-500">
-          Forecast results will appear here after a date and horizon are selected.
+          {forecast
+            ? `Forecast origin: ${forecast.forecast_origin}`
+            : "Forecast results will appear here after you generate a forecast."}
         </p>
+
+        {selectedForecast && (
+          <div className="mt-4 space-y-2 text-sm text-slate-300">
+            <p>
+              Selected horizon: {selectedForecast.horizon_days} day(s)
+            </p>
+            <p>
+              Predicted discharge: {selectedForecast.predicted_discharge} m³/s
+            </p>
+            <p>
+              Warning level: {selectedForecast.warning_level}
+            </p>
+            <p>
+              Training rows: {selectedForecast.training_rows}
+            </p>
+            <p>
+              Training data through: {selectedForecast.training_last_target_date}
+            </p>
+          </div>
+        )}
 
         {forecast && (
           <pre className="mt-5 overflow-x-auto rounded-lg border border-white/10 bg-black/20 p-4 text-xs text-slate-300">
