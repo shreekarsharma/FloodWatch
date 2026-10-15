@@ -1,0 +1,196 @@
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.impute import SimpleImputer
+
+
+# backend/app/services/forecast_service.py
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+DATA_PATH = (
+    BACKEND_DIR / "data" / "research" / "feature_matrix_full.csv"
+)
+
+YELLOW = 1114.16
+ORANGE = 1362.21
+RED = 1898.58
+
+HORIZONS = (1, 3, 5)
+
+CANDIDATE_FEATURES = [
+    "rainfall_mm",
+    "temperature_c",
+    "et_mm",
+    "soil_moisture",
+    "bagre_storage",
+    "bagre_storage_30d",
+    *[f"discharge_lag{i}" for i in range(1, 11)],
+    *[f"rainfall_lag{i}" for i in range(1, 6)],
+]
+
+
+def warning_level(discharge: float) -> str:
+    if discharge < YELLOW:
+        return "Normal"
+    if discharge < ORANGE:
+        return "Yellow"
+    if discharge < RED:
+        return "Orange"
+    return "Red"
+
+
+def load_dataset() -> pd.DataFrame:
+    """Load and validate the research feature matrix."""
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(
+            f"Forecast dataset not found: {DATA_PATH}"
+        )
+
+    df = pd.read_csv(DATA_PATH)
+
+    required = {"date", "discharge_grdc"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"Dataset is missing required columns: {sorted(missing)}"
+        )
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df = (
+        df.dropna(subset=["date"])
+        .sort_values("date")
+        .drop_duplicates(subset=["date"])
+        .reset_index(drop=True)
+    )
+
+    # Calendar features are known at the forecast origin.
+    df["month"] = df["date"].dt.month
+    day = df["date"].dt.dayofyear
+    df["sin_doy"] = np.sin(2 * np.pi * day / 365.25)
+    df["cos_doy"] = np.cos(2 * np.pi * day / 365.25)
+
+    return df
+
+
+def train_models(as_of_date):
+    """
+    Train one model per horizon using observations available
+    on or before as_of_date.
+
+    A target is eligible only when its future observed discharge
+    is available and its target date is also on or before as_of_date.
+    """
+    df = load_dataset()
+    cutoff = pd.Timestamp(as_of_date).normalize()
+
+    if cutoff not in set(df["date"]):
+        raise ValueError(
+            f"No dataset row exists for forecast origin {cutoff.date()}."
+        )
+
+    features = [
+        name for name in CANDIDATE_FEATURES
+        if name in df.columns
+    ]
+    features += ["month", "sin_doy", "cos_doy"]
+
+    if not features:
+        raise ValueError("No usable predictor features were found.")
+
+    observed = df["discharge_grdc"].notna()
+
+    models = {}
+
+    for horizon in HORIZONS:
+        target = df["discharge_grdc"].shift(-horizon)
+        target_date = df["date"].shift(-horizon)
+
+        eligible = (
+            observed
+            & target.notna()
+            & (df["date"] <= cutoff)
+            & (target_date <= cutoff)
+        )
+
+        X = df.loc[eligible, features].copy()
+        y = target.loc[eligible].astype(float)
+
+        # Retain training rows with at least one usable feature.
+        usable = X.notna().any(axis=1)
+        X = X.loc[usable]
+        y = y.loc[usable]
+
+        if len(X) < 30:
+            raise ValueError(
+                f"Insufficient training data for horizon {horizon}: "
+                f"{len(X)} rows."
+            )
+
+        imputer = SimpleImputer(strategy="median")
+        X_imputed = imputer.fit_transform(X)
+
+        model = RandomForestRegressor(
+            n_estimators=250,
+            random_state=42,
+            n_jobs=-1,
+            max_features="sqrt",
+            min_samples_leaf=2,
+        )
+        model.fit(X_imputed, y)
+
+        models[horizon] = {
+            "model": model,
+            "imputer": imputer,
+            "features": features,
+            "training_rows": len(X),
+            "training_last_target_date": str(
+                pd.to_datetime(target_date.loc[eligible].loc[usable]).max().date()
+            ),
+        }
+
+    return df, models
+
+
+def forecast(as_of_date):
+    """Return 1-, 3-, and 5-day discharge forecasts."""
+    df, models = train_models(as_of_date)
+    origin = pd.Timestamp(as_of_date).normalize()
+
+    row = df.loc[df["date"] == origin]
+    if row.empty:
+        raise ValueError(
+            f"No feature row exists for {origin.date()}."
+        )
+
+    results = []
+
+    for horizon, bundle in models.items():
+        features = bundle["features"]
+        X = row[features].copy()
+
+        if X.isna().all(axis=1).iloc[0]:
+            raise ValueError(
+                f"No predictor values are available for {origin.date()}."
+            )
+
+        X_imputed = bundle["imputer"].transform(X)
+        predicted = max(
+            0.0,
+            float(bundle["model"].predict(X_imputed)[0]),
+        )
+
+        results.append({
+            "forecast_origin": origin.date().isoformat(),
+            "forecast_date": (
+                origin + pd.Timedelta(days=horizon)
+            ).date().isoformat(),
+            "horizon_days": horizon,
+            "predicted_discharge": round(predicted, 3),
+            "warning_level": warning_level(predicted),
+            "training_rows": bundle["training_rows"],
+            "training_last_target_date": (
+                bundle["training_last_target_date"]
+            ),
+        })
+
+    return results
