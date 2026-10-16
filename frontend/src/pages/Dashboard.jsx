@@ -186,6 +186,16 @@ function Dashboard() {
     })}${suffix}`;
   };
 
+  const discharge = latestValues.discharge?.value;
+  const floodThreshold = 1114;
+
+  const warningStatus =
+    discharge == null
+      ? { label: "UNAVAILABLE", level: "Data unavailable" }
+      : discharge >= floodThreshold
+        ? { label: "RED", level: "High" }
+        : { label: "GREEN", level: "Normal" };
+
   const summaryCards = [
     {
       label: "Latest Observed Discharge",
@@ -322,15 +332,35 @@ function Dashboard() {
 
           <div className="mt-5 flex items-center justify-between">
             <div>
-              <p className="text-3xl font-bold text-emerald-300">GREEN</p>
+              <p
+                className={`text-3xl font-bold ${
+                  warningStatus.label === "RED"
+                    ? "text-red-400"
+                    : warningStatus.label === "GREEN"
+                      ? "text-emerald-300"
+                      : "text-slate-400"
+                }`}
+              >
+                {warningStatus.label}
+              </p>
 
               <p className="mt-1 text-sm text-slate-500">
-                Current observed discharge is below the flood threshold.
+                {discharge == null
+                  ? "Discharge data is unavailable."
+                  : `Historical discharge: ${discharge.toFixed(2)} m³/s. Threshold: ${floodThreshold} m³/s.`}
               </p>
             </div>
 
-            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-300">
-              Normal
+            <div
+              className={`rounded-full border px-4 py-2 text-sm font-semibold ${
+                warningStatus.label === "RED"
+                  ? "border-red-400/20 bg-red-400/10 text-red-300"
+                  : warningStatus.label === "GREEN"
+                    ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                    : "border-slate-400/20 bg-slate-400/10 text-slate-300"
+              }`}
+            >
+              {warningStatus.level}
             </div>
           </div>
         </div>
